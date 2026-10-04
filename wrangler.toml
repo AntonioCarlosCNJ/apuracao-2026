@@ -1,3 +1,9 @@
 name = "apuracao-2026"
-pages_build_output_dir = "public"
+main = "worker.js"
 compatibility_date = "2026-10-04"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "none"
