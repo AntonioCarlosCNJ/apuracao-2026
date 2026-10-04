@@ -1,0 +1,8 @@
+{
+  "name": "apuracao-2026",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "map": "node scripts/build-map.js"
+  }
+}

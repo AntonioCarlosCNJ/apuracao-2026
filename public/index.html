@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apuração 2026 · Presidente</title>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --card: #fffcf7;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e6e0d4;
+      --lula: #d71920;
+      --flavio: #0b4ea2;
+      --neutral: #d6d3d1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 22px 56px; }
+    header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; margin-bottom: 18px; }
+    .kicker { margin: 0 0 4px; color: var(--muted); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.15; font-weight: 650; letter-spacing: -0.03em; }
+    .live { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .dot { width: 8px; height: 8px; border-radius: 99px; background: var(--lula); }
+    .aviso { margin: 0 0 14px; color: #9a3412; font-size: 14px; }
+    .nacional { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 12px; margin-bottom: 14px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px 14px; }
+    .who { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 13px; }
+    .who b { color: var(--ink); font-size: 15px; font-weight: 650; }
+    .lugar { font-size: 12px; }
+    .pct { margin: 10px 0 4px; font-size: 36px; line-height: 1; font-weight: 650; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+    .votos { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .bar { height: 8px; margin-top: 12px; background: #ece7dc; border-radius: 99px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 0; }
+    .lula-ink { color: var(--lula); }
+    .flavio-ink { color: var(--flavio); }
+    .fill-lula { background: var(--lula); }
+    .fill-flavio { background: var(--flavio); }
+    .fill-ink { background: #44403c; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.95fr); gap: 12px; align-items: start; }
+    .legenda { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .legenda span { display: inline-flex; align-items: center; gap: 6px; }
+    .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    #detalhe { min-height: 44px; margin: 4px 0 8px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+    #detalhe strong { color: var(--ink); }
+    svg { width: 100%; height: auto; display: block; }
+    .uf path { stroke: #fffcf7; stroke-width: 1.5; cursor: pointer; vector-effect: non-scaling-stroke; }
+    .uf.on path { stroke: #1c1917; stroke-width: 2.5; }
+    .tag { pointer-events: none; }
+    .tag text { font-family: "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+    .fonte { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .regiao { margin: 14px 0 6px; color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .cols, .row {
+      display: grid;
+      grid-template-columns: 14px 32px minmax(0, 1fr) 58px 52px 58px;
+      gap: 6px;
+      align-items: center;
+    }
+    .cols { color: var(--muted); font-size: 11px; padding: 0 8px 4px; }
+    .row { padding: 5px 8px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .row b { font-weight: 650; }
+    .row .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row .n, .row .a, .row .tot { text-align: right; font-variant-numeric: tabular-nums; }
+    .row .tot { font-weight: 650; }
+    .row .a, .row .eleit { color: var(--muted); }
+    .row .eleit { grid-column: 3 / -1; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .row.on { background: #f3eee4; }
+    @media (max-width: 900px) {
+      header { flex-direction: column; align-items: flex-start; }
+      .nacional, .layout { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .pct { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <p class="kicker">Eleições 2026 · 1º turno · 4 de outubro</p>
+        <h1>Presidente por estado</h1>
+      </div>
+      <div class="live"><span class="dot"></span><span id="relogio">Consultando o TSE…</span></div>
+    </header>
+    <p class="aviso" id="aviso" hidden></p>
+    <section class="nacional" id="nacional"></section>
+    <div class="layout">
+      <section class="card">
+        <div class="legenda">
+          <span><i class="sw" style="background:#d71920"></i> Lula lidera</span>
+          <span><i class="sw" style="background:#0b4ea2"></i> Flávio Bolsonaro lidera</span>
+          <span><i class="sw" style="background:#d6d3d1"></i> Sem votos ainda</span>
+        </div>
+        <div id="detalhe">Passe o mouse num estado para ver os votos, as seções e o eleitorado apto.</div>
+        <svg id="mapa" role="img" aria-label="Mapa do Brasil com a liderança presidencial em cada estado"></svg>
+        <p class="fonte">
+          No mapa, o número maior é o percentual do líder nos votos válidos já apurados.
+          A linha seguinte é o percentual de seções totalizadas.
+          Onde cabe, a última linha é a parte do estado no eleitorado apto do Brasil.
+          Na lista, a coluna Total é esse mesmo percentual. O total nacional também inclui quem vota no exterior.
+          Vermelho é Lula, azul é Flávio Bolsonaro.
+          Fonte: arquivos públicos do TSE, eleição 6257, cargo presidente
+          (<span id="arquivo">uf-c0001-e006257-u.json</span>), relidos a cada 15 segundos.
+          A apuração ainda está em andamento: a cor mostra quem lidera agora, não o resultado final.
+        </p>
+      </section>
+      <aside class="card">
+        <div class="cols"><span></span><span>UF</span><span>Estado</span><span style="text-align:right">Líder</span><span style="text-align:right">Apurado</span><span style="text-align:right">Total</span></div>
+        <div id="lista"></div>
+      </aside>
+    </div>
+  </div>
+  <script>
+    const LULA = "#d71920";
+    const FLAVIO = "#0b4ea2";
+    const NEUTRO = "#d6d3d1";
+    const COSTA = new Set(["RN", "PB", "PE", "AL", "SE", "ES", "RJ"]);
+    const REGIOES = [
+      ["Norte", ["AC", "AP", "AM", "PA", "RO", "RR", "TO"]],
+      ["Nordeste", ["AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"]],
+      ["Centro-Oeste", ["DF", "GO", "MT", "MS"]],
+      ["Sudeste", ["ES", "MG", "RJ", "SP"]],
+      ["Sul", ["PR", "RS", "SC"]],
+    ];
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.getElementById("mapa");
+    const nos = new Map();
+    let ufAtivo = null;
+    let ultimo = null;
+
+    function pct(n, casas) {
+      return Number(n || 0).toLocaleString("pt-BR", {
+        minimumFractionDigits: casas,
+        maximumFractionDigits: casas,
+      }) + "%";
+    }
+    function inteiro(n) {
+      return Math.round(Number(n || 0)).toLocaleString("pt-BR");
+    }
+    function corDe(e) {
+      if (!e || e.erro || !e.lider || e.lider.votos <= 0) return "neutral";
+      if (e.lider.numero === "13") return "lula";
+      if (e.lider.numero === "22") return "flavio";
+      return "neutral";
+    }
+    function tinta(cor) {
+      if (cor === "lula") return LULA;
+      if (cor === "flavio") return FLAVIO;
+      return NEUTRO;
+    }
+    function el(name, attrs) {
+      const node = document.createElementNS(ns, name);
+      for (const [k, v] of Object.entries(attrs || {})) node.setAttribute(k, String(v));
+      return node;
+    }
+    function tspan(text, x, dy, size, weight) {
+      const node = el("tspan", { x, dy, "font-size": size, "font-weight": weight });
+      node.textContent = text;
+      return node;
+    }
+
+    function montarMapa(map) {
+      const costa = [];
+      for (const s of map.states) {
+        s.bw = s.maxX - s.minX;
+        s.bh = s.maxY - s.minY;
+        if (s.uf === "DF") {
+          s.place = "local";
+          s.lx = s.cx + 46;
+          s.ly = s.cy + 18;
+        } else if (COSTA.has(s.uf)) {
+          s.place = "coast";
+          costa.push(s);
+        } else {
+          s.place = "inside";
+        }
+      }
+      costa.sort((a, b) => a.cy - b.cy);
+      const leste = Math.max(...map.states.map((s) => s.maxX));
+      let y = 28;
+      for (const s of costa) {
+        s.lx = leste + 16;
+        s.ly = Math.max(s.cy - 16, y);
+        y = s.ly + 56;
+      }
+      const width = map.width + (costa.length ? 156 : 0);
+      const height = Math.max(map.height, y + 8);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+      for (const s of map.states) {
+        const g = el("g", { class: "uf" });
+        g.dataset.uf = s.uf;
+        const path = el("path", { d: s.d, fill: NEUTRO });
+        const title = el("title");
+        title.textContent = s.nome;
+        g.append(title, path);
+        g.addEventListener("mouseenter", () => destacar(s.uf, false));
+        g.addEventListener("mouseleave", () => destacar(null, false));
+        g.addEventListener("click", () => destacar(ufAtivo === s.uf ? null : s.uf, true));
+        svg.append(g);
+
+        const tag = el("g", { class: "tag" });
+        tag.dataset.uf = s.uf;
+        let box = null;
+        let line = null;
+        if (s.place !== "inside") {
+          line = el("line", {
+            x1: s.cx, y1: s.cy, x2: s.lx, y2: s.ly + 22,
+            stroke: "#a8a29e", "stroke-width": 1,
+          });
+          box = el("rect", {
+            x: s.lx, y: s.ly, width: 124, height: 46, rx: 4, fill: NEUTRO,
+          });
+          tag.append(line, box);
+        }
+        const text = el("text", {
+          "text-anchor": s.place === "inside" ? "middle" : "start",
+          fill: "#292524",
+        });
+        if (s.place === "inside") {
+          text.setAttribute("stroke", "rgba(0,0,0,.45)");
+          text.setAttribute("stroke-width", "2.5");
+          text.setAttribute("paint-order", "stroke");
+        }
+        tag.append(text);
+        svg.append(tag);
+        nos.set(s.uf, { s, path, title, text, box, line });
+      }
+    }
+
+    function parteDoTotal(e) {
+      const total = ultimo && ultimo.brasil ? ultimo.brasil.eleitores : 0;
+      if (!e || !e.eleitores || !total) return null;
+      return (e.eleitores / total) * 100;
+    }
+
+    function escreverRotulo(entry, e) {
+      const { s, text } = entry;
+      const cor = corDe(e);
+      const lider = e && e.lider && e.lider.votos > 0 ? pct(e.lider.percentual, 1) : "—";
+      const ap = e && !e.erro ? pct(e.apurado, 1) + " ap." : "sem dados";
+      const parte = parteDoTotal(e);
+      const tot = parte == null ? "—" : pct(parte, 1) + " tot.";
+      text.replaceChildren();
+      if (s.place === "inside") {
+        const grande = Math.min(s.bw, s.bh);
+        const size = grande > 130 ? 18 : grande > 90 ? 15 : 12;
+        const miudo = Math.max(10, size - 4);
+        const showUf = s.bh >= 78 && s.bw >= 52;
+        const showTot = parte != null && s.bh >= 96 && s.bw >= 72;
+        const y = s.cy - (showUf ? 16 : 8) - (showTot ? 6 : 0);
+        if (showUf) text.append(tspan(s.uf, s.cx, 0, miudo, 650));
+        text.append(tspan(lider, s.cx, showUf ? size : 0, size, 750));
+        text.append(tspan(ap, s.cx, size - 1, miudo, 550));
+        if (showTot) text.append(tspan(tot, s.cx, miudo, miudo, 650));
+        text.setAttribute("y", y);
+        text.setAttribute("fill", cor === "neutral" ? "#292524" : "#fff");
+        text.setAttribute("stroke", cor === "neutral" ? "rgba(255,255,255,.7)" : "rgba(0,0,0,.4)");
+      } else {
+        text.setAttribute("y", s.ly + 13);
+        text.append(tspan(`${s.uf}  ${lider}`, s.lx + 8, 0, 12, 750));
+        text.append(tspan(ap, s.lx + 8, 13, 11, 550));
+        text.append(tspan(tot, s.lx + 8, 13, 11, 650));
+        text.setAttribute("fill", cor === "neutral" ? "#292524" : "#fff");
+        if (entry.box) entry.box.setAttribute("fill", tinta(cor));
+        if (entry.line) entry.line.setAttribute("stroke", tinta(cor));
+      }
+    }
+
+    function pintar(e) {
+      const entry = nos.get(e.uf);
+      if (!entry) return;
+      const cor = corDe(e);
+      entry.path.setAttribute("fill", tinta(cor));
+      const parte = parteDoTotal(e);
+      entry.title.textContent = `${e.nome}: ${e.lider ? e.lider.nome + " " + pct(e.lider.percentual, 2) : "sem votos"} · ${pct(e.apurado, 2)} das seções · ${parte == null ? "—" : pct(parte, 2) + " do eleitorado"}`;
+      escreverRotulo(entry, e);
+      const row = document.querySelector(`.row[data-uf="${e.uf}"]`);
+      if (!row) return;
+      row.querySelector(".sw").style.background = tinta(cor);
+      row.querySelector(".n").textContent = e.lider && e.lider.votos > 0 ? pct(e.lider.percentual, 2) : "—";
+      row.querySelector(".a").textContent = e.erro ? "—" : pct(e.apurado, 2);
+      row.querySelector(".tot").textContent = parte == null ? "—" : pct(parte, 2);
+      row.querySelector(".eleit").textContent = e.eleitores ? `${inteiro(e.eleitores)} aptos` : "—";
+    }
+
+    function cardCandidato(c, lugar) {
+      const art = document.createElement("article");
+      art.className = "card";
+      const who = c.numero === "13" ? "lula" : "flavio";
+      art.innerHTML = `
+        <div class="who"><b>${c.nome}</b><span class="lugar">${lugar}</span></div>
+        <div class="pct ${who}-ink">${pct(c.percentual, 2)}</div>
+        <div class="votos">${inteiro(c.votos)} votos válidos</div>
+        <div class="bar"><span class="fill-${who}" style="width:${Math.max(0, Math.min(100, c.percentual))}%"></span></div>`;
+      return art;
+    }
+
+    function pintarNacional(b) {
+      const host = document.getElementById("nacional");
+      host.replaceChildren();
+      const dupla = [b.lula, b.flavio].filter(Boolean).sort((a, c) => c.votos - a.votos);
+      dupla.forEach((c, i) => {
+        const diff = dupla[1] ? c.percentual - dupla[1].percentual : 0;
+        const lugar = i === 0 ? `Lidera por ${pct(diff, 2).replace("%", "")} p.p.` : "2º lugar";
+        host.append(cardCandidato(c, lugar));
+      });
+      const ap = document.createElement("article");
+      ap.className = "card";
+      ap.innerHTML = `
+        <div class="who"><b>Apuração nacional</b><span class="lugar">seções</span></div>
+        <div class="pct">${pct(b.apurado, 2)}</div>
+        <div class="votos">${inteiro(b.secoesApuradas)} de ${inteiro(b.secoesTotal)} seções</div>
+        <div class="votos">${inteiro(b.eleitores)} eleitores aptos</div>
+        <div class="bar"><span class="fill-ink" style="width:${Math.max(0, Math.min(100, b.apurado))}%"></span></div>`;
+      host.append(ap);
+    }
+
+    function mostrarDetalhe(uf) {
+      const box = document.getElementById("detalhe");
+      const e = ultimo && ultimo.estados.find((item) => item.uf === uf);
+      if (!e) {
+        box.textContent = "Passe o mouse num estado para ver os votos, as seções e o eleitorado apto.";
+        return;
+      }
+      const total = ultimo.brasil ? ultimo.brasil.eleitores : 0;
+      const parte = total > 0 ? (e.eleitores / total) * 100 : 0;
+      const lado = (c) => c ? `${c.nome} ${pct(c.percentual, 2)} (${inteiro(c.votos)})` : "—";
+      box.innerHTML = "";
+      const nome = document.createElement("strong");
+      nome.textContent = e.nome;
+      box.append(nome, document.createTextNode(
+        ` · ${inteiro(e.eleitores)} eleitores aptos (${pct(parte, 2)} do total) · ${lado(e.flavio)} · ${lado(e.lula)} · ${pct(e.apurado, 2)} das seções · TSE ${e.atualizadoEm || "—"}`
+      ));
+    }
+
+    function destacar(uf, fixar) {
+      if (fixar) ufAtivo = uf;
+      else if (ufAtivo) return;
+      const ativo = ufAtivo || uf;
+      document.querySelectorAll(".uf, .row").forEach((node) => {
+        node.classList.toggle("on", node.dataset.uf === ativo);
+      });
+      mostrarDetalhe(ativo);
+    }
+
+    function montarLista() {
+      const host = document.getElementById("lista");
+      for (const [nome, ufs] of REGIOES) {
+        const h = document.createElement("div");
+        h.className = "regiao";
+        h.textContent = nome;
+        host.append(h);
+        for (const uf of ufs) {
+          const entry = nos.get(uf);
+          const row = document.createElement("div");
+          row.className = "row";
+          row.dataset.uf = uf;
+          row.innerHTML = `<i class="sw" style="background:${NEUTRO}"></i><b>${uf}</b><span class="nome"></span><span class="n">—</span><span class="a">—</span><span class="tot">—</span><span class="eleit">—</span>`;
+          row.querySelector(".nome").textContent = entry ? entry.s.nome : uf;
+          row.addEventListener("mouseenter", () => destacar(uf, false));
+          row.addEventListener("mouseleave", () => destacar(null, false));
+          row.addEventListener("click", () => destacar(ufAtivo === uf ? null : uf, true));
+          host.append(row);
+        }
+      }
+    }
+
+    function aplicar(data) {
+      ultimo = data;
+      if (data.brasil) pintarNacional(data.brasil);
+      for (const e of data.estados) pintar(e);
+      const quando = data.brasil && data.brasil.atualizadoEm ? data.brasil.atualizadoEm : "—";
+      document.getElementById("relogio").textContent = `TSE ${quando} · lido agora`;
+      if (data.arquivo) document.getElementById("arquivo").textContent = data.arquivo;
+      const aviso = document.getElementById("aviso");
+      if (data.avisos && data.avisos.length) {
+        aviso.hidden = false;
+        aviso.textContent = "Leitura incompleta: " + data.avisos.join(" · ");
+      } else {
+        aviso.hidden = true;
+      }
+      mostrarDetalhe(ufAtivo);
+    }
+
+    async function ciclo() {
+      try {
+        const res = await fetch("/api/apuracao");
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.erro || "Falha ao consultar o TSE");
+        aplicar(body);
+      } catch (error) {
+        const aviso = document.getElementById("aviso");
+        aviso.hidden = false;
+        aviso.textContent = "Não consegui atualizar agora. " + error.message;
+      }
+    }
+
+    async function iniciar() {
+      const map = await (await fetch("/map.json", { cache: "no-store" })).json();
+      montarMapa(map);
+      montarLista();
+      await ciclo();
+      setInterval(ciclo, 15000);
+    }
+    iniciar();
+  </script>
+</body>
+</html>
